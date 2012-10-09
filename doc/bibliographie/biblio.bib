@@ -1,0 +1,717 @@
+/****************************
+ * Biblio sur la centralite *
+ ****************************/
+
+/*
+ * Introduit plusieurs notions sur les graphes et réseaux.
+ * Le livre propose notemment des références sur la centralité intermédiaire et en introduit les concepts de bases :
+ * - les cas classiques avec des méthodes base sur les plus courts chemins
+ * - une proposition de résolution avec des marches aléatoires.
+ */
+@book{Newman2010Networks,
+	author = {Newman, M. E. J.},
+	publisher = {Oxford University Press},
+	title = {Networks: An Introduction},
+	year = 2010
+}
+
+/*
+ * Introduit en premier le concept d'importance d'un noeud intermédiaire dans la communication de deux autres noeuds
+ */
+@article{Bavelas1948Mathematical,
+    author = {Bavelas, A.},
+    journal = {Human Organization},
+    pages = {16--30},
+    title = {{A mathematical model for group structures}},
+    volume = {7},
+    year = {1948}
+}
+
+/*
+ * Article d'origine sur le sujet
+ */
+@article{Freeman1977SetMeasure,
+	title={A set of measures of centrality based on betweenness},
+	volume={40},
+	number={1}, 
+	journal={Sociometry}, 
+	author={Freeman, L. C.}, 
+	year={1977}, 
+	pages={35--41}
+}
+
+/*
+ * Deuxième article d'origine sur le sujet
+ */
+@techreport{Anthonisse1971Rush,
+	author = {Anthonisse, J. M.},
+	title = "The rush in a directed graph",
+	institution = {Stichting Mahtematisch Centrum, Amsterdam},
+	number = "BN9/71",
+	year = "1971",
+}
+
+/*
+ * Article résumant celui d'origine sur la centralité d'intermédiarité
+ * résume également les 3 autres types de centralité
+ * Et enfin propose une mesure permettant de comparer la centralité de deux graphes différents (pas forcément utile dans notre cas
+ * sauf si on souhaite comparer le havre avec Rouen ou quelque chose de ce genre)
+ */
+@article{Freeman1979Centrality,
+	author = {Freeman, L. C.},
+	journal = {Social networks},
+	number = 3,
+	pages = {215--239},
+	publisher = {Elsevier},
+	title = {Centrality in social networks : conceptual clarification},
+	volume = 1,
+	year = 1979
+}
+
+/*
+ * 
+ */
+@article{Newman2001ScientificI,
+	volume = {64},
+	journal = {Phys. Rev. E},
+	author = {Newman, M. E. J.},
+	month = {Jun},
+	url = {http://link.aps.org/doi/10.1103/PhysRevE.64.016131},
+	doi = {10.1103/PhysRevE.64.016131},
+	year = {2001},
+	title = {Scientific collaboration networks. I. Network construction and fundamental results},
+	issue = {1},
+	publisher = {American Physical Society},
+	numpages = {8},
+	pages = {016131}
+}
+
+/*
+ *
+ */
+@article{Newman2001ScientificII,
+	volume = {64},
+	journal = {Phys. Rev. E},
+	author = {Newman, M. E. J.},
+	month = {Jun},
+	url = {http://link.aps.org/doi/10.1103/PhysRevE.64.016132},
+	doi = {10.1103/PhysRevE.64.016132},
+	year = {2001},
+	title = {Scientific collaboration networks. II. Shortest paths, weighted networks, and centrality},
+	issue = {1},
+	publisher = {American Physical Society},
+	numpages = {7},
+	pages = {016132}
+}
+
+
+/*
+ * Propose de calculer la centralité en se basant sur les chemins faisant partie d'une solution du calcul de flot max.
+ * Peut être intéressant dans certain cas, mais pas pour notre problème.
+ * Effectivement, supposons qu'on atteigne le flot max sur un arc,  on va donc choisir tout les prochains chemins de façon à 
+ * contourner cet arc. Or si dans la pratique cet arc n'est jamais encombrer, mais qu'il est la source d'un nombre très important 
+ * de chemin très interessant vers une destination (ou plusieurs) alors le noeud à l'extrémité de cet arc aura une centralité 
+ * potentiellement plus faible alors que ca ne devrait pas.
+ * On propose donc ici une solution à un problème qui ne nous interesse pas.
+ */
+@article{FreemanBorgattiWhite1991Centrality,
+	title={Centrality in valued graphs: A measure of betweenness based on network flow},
+	volume={13},
+	number={2},
+	journal={Social Networks},
+	publisher={Elsevier},
+	author={Freeman, L. C. and Borgatti, S. P. and White, D. R.},
+	year={1991},
+	pages={141--154}
+}
+
+/*
+ * L'auteur fait un tour d'horizon des mesures de centralité dans des réseaux modèlisant des flots.
+ * Il montre que certains réseaux ont des propriété très différentes, et par conséquent les mesures de centralité ne vont pas avoir 
+ * la même efficatité. Il montre d'ailleurs que la centralité d'intermédiarité n'est pas forcément appropriée lorsqu'on cherche la 
+ * centralité d'un noeud dans un réseaux où les "chose" qui s'y déplacent n'emprunte pas le plus court chemin, comme c'est le cas 
+ * pour un réseaux routier.
+ *
+ * De plus, la mesure de Freeman adapter pour les flots n'est pas non plus toujours approprié car selon la sémantique du graphe, le 
+ * processus de calcul de flot n'est pas toujours pareil et il faut donc adapter le calcul de la centralité à ces cas particulier.
+ * Borgatti prend ainsi des exemples montrant des caractéristiques générales.
+ * 
+ * Il compare des méthodes ressemblant à des marche aléatoire avec les calcul exacte. Il montre que les résultats sont similaires.
+ * => a vérifier (voir la partie sur la betweenness et la méthode de "package")
+ */
+@article{Borgatti2005Centrality,
+	author = {Borgatti, S. P.},
+	journal = {Social Networks},
+	month = jan,
+	number = {1},
+	pages = {55--71},
+	publisher = {Elsevier},
+	title = {{Centrality and network flow}},
+	volume = {27},
+	year = {2005}
+}
+
+/*
+ * Résume certaines idées directrices sur la centralité dans les graphes et rappel l'existence de technique plus exotique. Notamment :
+ * - k-path centrality : compte tout les chemin de taille k ou moins partant d'un noeud donné. Si k=1, equivalent au degré, et quand 
+ *   k=n-1 on obtient tout les chemins sans exeption.
+ * - edge-disjoint k-path-centrality : identique au k-path à la difference que les chemins sont disjoint entre eux (ne partage pas 
+ *   la même arrete).
+ * - vertex-disjoint k-path centrality : idem que precedemment mais cette fois les chemins ne partagent pas les noeud (sauf les 
+ *   extremités).
+ * - Katz's measure : on compte tout les chemins possibles et on les pondère : plus ils sont long et indirecte, plus ils sont peu 
+ *   pondérer, et à l'inverse, plus il sont court et directe, plus ils sont fortement pondéré.
+ *   Il existe des variantes :
+ *     -> Hubbell (1965 et repris semble-t-il par Hoed 1978)
+ *     -> Friedkin (1991)
+ *     -> Bonacich (1987)
+ */
+@article{Borgatti2006GraphTheoretic,
+    author = {Borgatti, S. P. and Everett, R.},
+    journal = {Social Networks},
+    title = {A graph-theoretic perspective on centrality},
+    year = {2006}
+}
+
+/*
+ * Propose une mesue basé sur la centralité intermédiaire mais qui ne considère pas que les plus courts chemins. Elle considère 
+ * uniquement les chemins de longueur inférieur à un paramètre K.
+ * Ils proposent une implémentation de la méthode qui est multi thread.
+ */
+@article{Jiang2009Generalizing,
+	title={Generalizing k-Betweenness Centrality Using Short Paths and a Parallel Multithreaded Implementation},
+	journal={2009 International Conference on Parallel Processing},
+	publisher={Ieee},
+	author={Jiang, Karl and Ediger, David and Bader, David A},
+	year={2009},
+	pages={542--549}
+}
+
+/*
+ * Brandes propose l'un des algorithmes le plus utilisé aujourd'hui pour calculer la betweenness centrality.
+ * Il se base sur une notion de "récursivité" dans le calcul de la centralité.
+ * Ainsi on peut mettre à jour la centralité petit à petit. Toutefois, son algo est d'abord fait pour des graphes non valués.
+ * Brandes précise qu'il faut simplement effectuer quelques modifications mineurs.
+ * 
+ * => revoir les références de cet article pour en trouver d'autres parlant de la recherche de plus court chemin
+ */
+@article{Brandes2001Faster,
+    author = {Brandes, U.},
+    title = {A Faster Algorithm for Betweenness Centrality},
+    journal = {Journal of Mathematical Sociology},
+    year = {2001},
+    volume = {25},
+    pages = {163--177}
+}
+
+/*
+ * Brandes reprend son travail datant de 2001 et fournit plusieurs algorithmes modifiés pouvant être utilisé dans différents 
+ * type de graphe : les graphes valués, orienté, ...
+ * Brandes montre qu'il peut etre utile de considérer les extrémité du chemin pour calculer la centralité, notamment lorsque 
+ * tout les noeuds ne sont pas accessibles deux à deux : il exise un chemin de A à B mais pas de B à A, B est donc plus 
+ * accessible que A donc il devrait avoir une centralité différente. Toutefois cette notion n'est pas forcément utile pour nous car, 
+ * a priori,  dans un réseau routier, tout les noeuds sont accessible (pas forcément si le réseau contient des impasses interdites à 
+ * la circulation de véhicule comme une rue piétonne).
+ *
+ * Il parle d'une "bounded-distance betweenness" qui ne considère que les chemins étant d'une longueur maximale (en nombre de lien). 
+ * Il dit que c'est mieux car un noeud intermediaire dans un chemin de grande taille n'a pas forcément beaucoup d'importance. Mais 
+ * est ce vraiment le cas pour un réseau routier? Effectivement, si un noeud est souvent intermédiaire dans des chemins de grande 
+ * taille, alors n'est-il pas plus important?
+ * On peut, dans le même esprit, pondérer les résultats en fonction de la distance inverse du chemin dans lequel se trouve le noeud.
+ * Encore une fois, est ce valable pour un réseau viaire.
+ *
+ * Il propose un algo pour les graphes valués. Il dit aussi que des chemins de grandes taille peuvent correspondre à des chemins 
+ * "faible" (comme pour le nombre de lien). Du coup, il préconise d'utiliser des fonctions particulières comme la distance inverse 
+ * (1/d) pour modifier se comportement.
+ * => Encore une fois, est ce que c'est notre cas dans un réseau viaire?
+ *
+ * On a aussi quelques pistes concernant les multigraphes. On peut par exemple considérer une multi-arrete comme une seule et 
+ * utiliser l'algo de base. Toutefois, il est peut etre plus judicieux pour nous de considérer effectivement les nouveaux plus courts 
+ * chemins créés par cette multiplicité car un noeud étant relié à une route à plusieurs voies possède une importance supplémentaire.
+ * L'algo qu'il propose utilise une fonction prenant en argument les deux sommets reliés. A priori, cette fonction retourne soit le 
+ * nombre d'arrete, soit la valeur de l'arc, mais on peut imaginer qu'elle retourne à la place le nombre d'arc reliant les deux 
+ * sommet multiplié par la valeur des arcs.
+ * => Existe-t-il des couples de noeuds étant reliés par plusieurs arretes dont la valeur n'est pas la même? Si oui, il faut ajuster
+ * l'algo.
+ */
+@misc{Brandes2007OnVariants,
+    author = {Brandes, U.},
+    title = {On Variants of Shortest-Path Betweenness Centrality and their Generic Computation},
+    year = {2007}
+}
+
+/*
+ * Propose une définition assez interessante de la centralité dans son formalisme.
+ * les auteurs fournissent une méthode d'approximation de la centralité qui semble efficace.
+ * Méthode "bisection scaling for canonical centrality" : elle semble approximer les valeurs en fonction de leur place dans le 
+ * chemin : les noeuds étant plus proche de la cible sont mieux valué.
+ *
+ * Cela dit, il peut etre interessant de valuer différemment les noeuds en fonction de leur position dans le chemin. Toutefois, il 
+ * faudrait déterminer qu'elle est la meilleure valuation : les noeuds proches des extrèmité (uniquement proche de la source ou 
+ * uniquement proche de la cible, ou proche de l'un ou l'autre), ou plutot les noeuds au centre du chemin.
+ */
+@inproceedings{Geisberger2008Better,
+	author    = {Geisberger, R. and Sanders, P. and Schultes, D.},
+	title     = {Better Approximation of Betweenness Centrality},
+	booktitle = {ALENEX},
+	year      = {2008},
+	pages     = {90-100},
+}
+
+/*
+ * Parle notamment de la centralité sur les arretes.
+ */
+@article{Klein2010Centrality, 
+	title={Centrality measure in graphs},
+	volume={47},
+	number={4},
+	journal={Journal of Mathematical Chemistry},
+	author={Klein, D. J.},
+	year={2010},
+	pages={1209--1223}
+}
+
+/*
+ * Ils présentent un algorithme permettant d'approcher la valeur de la centralité des noeuds.
+ * Cette méthode semble être valable pour la closeness et la betweenness centrality.
+ * L'idée principal est de considérer un sous ensemble de noeud de départ et de noeud d'arriver : il s'agit de noeud "pivots".
+ * Les auteurs présentent le concept général, puis montre des stratégies différentes pour sélectionner les pivots.
+ * Dans leurs conclusions, ils montrent que le choix aléatoire des noeuds pour les pivots est un des meilleurs choix (plutot que de 
+ * prendre des stratégies plus complexe).
+ */
+@article{Brandes2007Centrality,
+  author    = {Brandes, U. and Pich, C.},
+  title     = {Centrality Estimation in Large Networks},
+  journal   = {Internationnal Journal of Bifurcation and Chaos},
+  volume    = {17},
+  number    = {7},
+  year      = {2007},
+  pages     = {2303--2318},
+}
+
+@article{Eppstein2004Fast,
+	title={Fast Approximation of Centrality},
+	volume={8},
+	number={1},
+	journal={Journal of Graph Algorithms and Applications},
+	publisher={Society for Industrial and Applied Mathematics},
+	author={Eppstein, David and Wang, Joseph},
+	year={2004},
+	pages={39--45}
+}
+
+/*
+ * A notemment eu un interet en fournissant la référence vers la thèse de Gleyze.
+ */
+@phdthesis{Mermet2011AideExplor,
+	year = {2011},
+	author = {Mermet, Éric},
+	title = {Aide à l’exploration des propriétés structurelles d’un réseau de transport},
+	school = {École Doctorale Mathématiques et STIC}
+}
+
+/*
+ * Propose une adaptation de la formule de calcul de centralité d'intermédiairité en pondérant les chemins selon un poids particulier.
+ * Ce poids est déterminé selon une méthode de calcul particulière.
+ * De plus, il amène l'idée de calculer la centralité sur les arètes et non sur les noeuds. Or c'est interessant de faire ainsi, car de 
+ * cette mnière, on évite d'avoir des résultats biaisés par le degré du noeud.
+ *
+ * Gleyze étudie également la possibilité de calculer la centralité par une marché aléatoire en utilisant le modèle proposé par Newman. 
+ * Il montre les limites de ce modèle dans le cas d'un réseaux de transport. Effectivement la marche aléatoire de Newman s'inspire des 
+ * réseaux électriques, et les arrêtes sont ainsi associé à une propension à être congestionné (selon lui). Par conséquent, Gleyze 
+ * décide d'approfondir les modèles de transport.
+ *
+ * Il propose une méthode pouvant se montrer interessante, un usager va choisir un chemin en fonction de ses caractèristiques (comme 
+ * la longueur, ...) mais également en fonction du choix des autres usagers (on parle de congestion) voir partie D222
+ */
+@phdthesis{Gleyze2005Vulneraibilite,
+	year = {2005},
+	author = {Gleyze, Jean-François},
+	title = {La vulnérabilité structurelle des réseaux de transport dans un contexte de risques},
+	school = {Université Paris VII}
+}
+
+/*
+ * Propose de mettre en relation la distance du plus court chemin réelle avec la distnce "à vol d'oiseau"
+ * Pour comparer la centralité intermédiaire "réelle" des noeuds avec celle "optimal" il utilise des chemins de Delaunay, eux même 
+ * basés sur la triangulation de Delaunay du semis de sommets du réseaux.
+ * => pas sûr que cette manière de calculer soit pertinente pour nous...
+ */
+@article{Gleyze2007Effets,
+    author = {Gleyze, Jean-François},
+    journal = {Cybergeo : European Journal of Geography},
+    title = {{Effets spatiaux et effets r\'{e}seau dans l'\'{e}valuation d'indicateurs sur les n{\oe}uds d'un r\'{e}seau d'infrastructure}},
+    year = {2007},
+    month = {April}
+}
+
+/*
+ * 
+ */
+@phdthesis{Nabaa2011Morphodyn,
+	year = {2011},
+	author = {Nabaa, Michel},
+	title = {Morphodynamique des réseaux viaire, application au risque},
+	school = {Université du Havre}
+}
+
+/*
+ * L'auteur souhaite montrer si nous pouvons emettre certaines hypothèses, mesurer des caractèristique sur un graphe à l'aide 
+ * d'indices particuliers.
+ * Il s'interesse à plusieurs indices, pas forcément pertinents pour nous. Toutefois, il précise bien dans sa conclusion qu'il n'y 
+ * pas d'unique indice permettant d'établir toutes les caractèristiques d'un graphe. Il est nécessaire d'en utiliser plusieurs si 
+ * l'on souhaite mettre en valeur la vulnérabilité du graphe. Le cas de l'étoile est assez parlant : plusieurs indices donne une 
+ * centralité forte alors que l'étoile est très vulnérable.
+ */
+@article{Parlebas1972Centralite,
+    author = {Parlebas, Pierre},
+    journal = {Mathématiques et sciences humaines},
+    month = {Automne},
+    pages = {5--26},
+    title = {{Centralité et compacité d'un graphe}},
+    volume = {39},
+    year = {1972}
+}
+
+
+/**************************************************************************************
+ * Biblio sur le calcul de centralité intermédiaire sur les arrêtes *
+ **************************************************************************************/
+ 
+ 
+/*
+ *
+ */
+@article{Yoon2006Algorithm,
+	author = {Yoon, J. and Blumer, A. and Lee, K.},
+	journal = {Bioinformatics},
+	number = 24,
+	pages = 3106,
+	publisher = {Oxford Univ Press},
+	title = {{An algorithm for modularity analysis of directed and weighted biological networks based on edge-betweenness centrality}},
+	volume = 22,
+	year = 2006
+}
+
+/*
+ *
+ */
+@article{Newman2004Finding,
+	author = {Newman, M. E. J. and Girvan, M.},
+	journal = {Physical Review},
+	number = 026113,
+	title = {Finding and evaluating community structure in networks},
+	volume = {E 69},
+	year = 2004
+}
+
+/**************************************************************************************
+ * Biblio sur le calcul de centralité intermédiaire avec une marche aléatoire biaisée *
+ **************************************************************************************/
+ 
+ 
+/*
+ * Article d'origine concernant le calcul de centralité en utilisant la marche aléatoire.
+ * Peut se montrer interressant si on souhaite modéliser (de manière imparfaite) le déplacement de population dans un réseau routier :
+ * principalement car une population n'emprunte pas forcément le plus court chemin, toutefois, cette méthode est peut etre trop souple
+ * dans sa manière de choisir les chemins.
+ */
+@misc{Newman2005MeasureBetweenness,
+	author = {Newman, M. E. J.},
+	title = {A measure of betweenness centrality based on random walks},
+	year = {2005}
+	volume={27},
+	number={1},
+	journal={Social Networks},
+	publisher={Elsevier},
+	pages={39--54}
+}
+
+/*
+ * Un "marcheur" choisit le prochain noeud où aller avec une probabilité :
+ * P_{i \rightarrow j} = \frac{k_j^\alpha}{\sum_{j=1}^{k_i}k_j^\alpha}
+ * Ainsi, avec \alpha qui tend vers +\infty le marcheur aura tendance à être hâpé par les noeuds/hub de fort degré, si \alpha tend 
+ * vers - \infty alors le marcheur aura tendance à aller visité la périphérie plus souvent. Et si \alpha=0, alors on obtient une simple 
+ * marche aléatoire classique.
+ *
+ * Ils trouvent numériquement sur un scale free graph, que l'on obtient une mesure comparable à la centralité intermédiaire. J'émet 
+ * un doute sur la pertinence des résultats. N'y a t il pas un biais dans le scale free graphe? Un scale free graph me semble fournir 
+ * de l'importance aux noeuds de fort degré donc logiquement la BC est forte sur ces noeuds là. Donc comme le modèle proposé est biaisé 
+ * par le degré des noeuds c'est logique d'obtenir une corrélation. Bref pour un scale free graphe c'est peut être bien mais pour une 
+ * réseaux routier le degré des noeuds influence (peut être?) beaucoup moins la centralité intermédiaire.
+ *
+ * Les auteurs montrent par la pratique qu'il faut correctement ajuster le paramètre \alpha pour mettre en corrélation les résultat du 
+ * BRWC et de la BC.
+ */
+﻿@article{Lee2009Centrality,
+   author = {Lee, S. and Yook, S.-H. and Kim, Y.},
+   affiliation = {Department of Physics and Research Institute for Basic Sciences, Kyung Hee University Seoul 130-701 Korea},
+   title = {Centrality measure of complex networks using biased random walks},
+   journal = {The European Physical Journal B - Condensed Matter and Complex Systems},
+   publisher = {Springer Berlin / Heidelberg},
+   issn = {1434-6028},
+   keyword = {Physics and Astronomy},
+   pages = {277-281},
+   volume = {68},
+   issue = {2},
+   url = {http://dx.doi.org/10.1140/epjb/e2009-00095-5},
+   note = {10.1140/epjb/e2009-00095-5},
+   year = {2009}
+}
+
+/*
+ * L'auteur présente un algorithme permettant d'établir une approximation de la centralité d'intermédiairité.
+ * Celle-ci se base sur une marche aléatoire : une info transite entre deux noeud s et t sur des chemins "simple" (cad, qui ne passe
+ * pas deux fois par le même noeud) et ne doit pas traversé plus de k arretes.
+ * Le paramètre k doit varier en fonction du réseau. Alahakoon préconise k=ln(n+m) et alpha=0.2 (param de l'algo)
+ * L'algo montre surtout un intéret pour identifier les 1 à 5 pourcent noeuds ayant les plus forte valeur de centralité d'intermédiarité
+ * Au dela de 5 pourcent, il est plus efficace de considerer d'autres méthodes
+ */
+@inproceedings{Alahakoon2011KPath,
+	author = {Alahakoon, T. and Tripathi, R. and Kourtellis, N. and Simha, R. and Iamnitchi, A.},
+	title = {K-path centrality: a new centrality measure in social networks},
+	booktitle = {Proceedings of the 4th Workshop on Social Network Systems},
+	series = {SNS '11},
+	year = {2011},
+	pages = {1:1--1:6},
+	publisher = {ACM},
+	address = {New York, NY, USA},
+}
+
+/*
+ * A verifier s'il s'agit d'une méthode de marche aléatoire
+ */
+@article{Goh2001Universal,
+	volume = {87},
+	journal = {Physical Review Letters},
+	author = {Goh, K.-I. and Kahng, B. and Kim, D.},
+	month = {Dec},
+	url = {http://link.aps.org/doi/10.1103/PhysRevLett.87.278701},
+	doi = {10.1103/PhysRevLett.87.278701},
+	year = {2001},
+	title = {Universal Behavior of Load Distribution in Scale-Free Networks},
+	issue = {27},
+	publisher = {American Physical Society},
+	numpages = {4},
+	pages = {278701}
+}
+
+/**********************************************
+ * Biblio sur les marches aléatoires biaisées *
+ **********************************************/
+ 
+/*
+ * A lire pour voir leur technique de biased random walk
+ */
+@book{Blanchard2009Mathematical,
+   author={Blanchard, Philippe and Volchenkov, Dimitri},
+   title={Mathematical Analysis of Urban Spatial Networks},
+   address={Berlin/New York},
+   publisher={Springer},
+   year={2009}
+}
+
+/*
+ * Ne présente pas de manière de calculer la centralité mais propose un modèle de marche aléatoire dont nous pourrions peut être nous
+ * en inspirer.
+ * Ce que les auteurs cherchent à calculer c'est la conductance d'un graphe.
+ * Il s'agit d'une mesure qui indique à quel point le graphe est bien connecter à l'aide d'une marche aléatoire.
+ * Algo de marche aléatoire non biaisé par le degré:
+ * 1 : choose a neighbor j from Voisin uniformly at random
+ * 2 : Query j for d_j (its current degree)
+ * 3 : Generate a random number p \in \[0, 1\] uniformly
+ * 4 : if p \leq d_i/d_j then
+ * 5 : 		make the step to j
+ * 6 : else
+ * 7 : 		remain at i
+ * => Problème : modifier cette algo pour le biaiser selon nos propres règles (e.g. heuristique sur la distance à la destination) ne
+ * risque-t-il pas de rebiaiser la sélection en fonction du degré? Bref, comment le modifier?
+ * Si nous voulons ajouter une heuristique sur le choix du noeud,  il faudrait choisir ce noeud de manière non uniforme à la ligne 1
+ * de l'algo. Toutefois, puisque le choix n'est plus uniforme, est ce que la preuve que l'algo n'est pas biaisé par le degré est 
+ * toujours valide?
+ * Peut être à vérifier dans le papier où est présenté la méthode de Metropolis-Hastings
+ * Le papier de Hasting de 1970 ne semble pas fournir de réponse en le parcourant très rapidement
+ * Voir celui de 
+ *
+ * Le reste de l'article présente surtout les résultats concernant la conductance. Ce n'est pas forcément interessant pour nous.
+ */
+@techreport{Kermarrec2008Evaluation,
+    title = {Evaluating the quality of a network topology through random walks},
+    author = {Kermarrec, Anne-Marie and Le Merrer, Erwan and Sericola, Bruno and Tr{\'e}dan, Gilles},
+    pages = {22},
+    type = {Rapport de recherche},
+    institution = {INRIA},
+    number = {RR-6534},
+    year = {2008},
+}
+
+/* 
+ *
+ */
+@article{Stutzbach2006Unbiased,
+	title={On unbiased sampling for unstructured peer-to-peer networks},
+	volume={17},
+	url={http://portal.acm.org/citation.cfm?doid=1177080.1177084},
+	number={2},
+	journal={IEEE/ACM Transactions on Networking},
+	publisher={IEEE Press},
+	author={Stutzbach, Daniel and Rejaie, Reza and Duffield, Nick and Sen, Subhabrata and Willinger, Walter},
+	year={2006},
+	pages={377--390}
+}
+
+/*
+ * Pas vraiment interessant. Les algos se servent de matrice de cout, de probabilité et un vecteur indiquant à quelle classe 
+ * appartient chaque noeud.
+ * Bref c'est peut etre performant mais je préfére un modèle agent ou un truc du même genre.
+ */
+@article{Mantrach2012SemiSupervised,
+	author = {Mantrach, Amin and van Zeebroeck, Nicolas and Francq, Pascal and Shimbo, Masashi and Bersini, Hugues and Saerens, Marco},
+	title = {Semi-supervised classification and betweenness computation on large, sparse, directed graphs},
+	journal = {Pattern Recognition},
+	issue_date = {June, 2011},
+	volume = {44},
+	number = {6},
+	month = jun,
+	year = {2011},
+	issn = {0031-3203},
+	pages = {1212--1224},
+	numpages = {13},
+	url = {http://dx.doi.org/10.1016/j.patcog.2010.11.019},
+	doi = {10.1016/j.patcog.2010.11.019},
+	acmid = {1942727},
+	publisher = {Elsevier Science Inc.},
+	address = {New York, NY, USA},
+	keywords = {Betweenness centrality, Graph mining, Graph-based classification, Kernel methods, Kernel on a graph, Large-scale graphs, Semi-supervised classification, Within-network classification},
+} 
+
+
+/******************************************************
+ * Biblio sur le calcul de chemin et les algo fourmis *
+ ******************************************************/
+ 
+@article{Hart1968AFormalBasis,
+	author = {Hart, Peter and Nilsson, Nils and Raphael, Bertram},
+	booktitle = {Systems Science and Cybernetics, IEEE Transactions on},
+	doi = {10.1109/TSSC.1968.300136},
+	institution = {Artificial Intelligence Group of the Applied Physics Laboratory, Stanford Research Institute, Menlo Park, Calif.},
+	journal = {IEEE Transactions on Systems Science and Cybernetics},
+	month = jul,
+	number = {2},
+	pages = {100--107},
+	publisher = {IEEE},
+	title = {{A Formal Basis for the Heuristic Determination of Minimum Cost Paths}},
+	volume = {4},
+	year = {1968}
+}
+
+@article{Colorni1992Distributed,
+	title={Distributed Optimization by Ant Colonies},
+	volume={142},
+	number={1},
+	journal={Compute},
+	publisher={Elsevier Publishing},
+	author={Colorni, A and Dorigo, M and Maniezzo, V},
+	editor={Varela, F J and Bourgine, PEditors},
+	year={1992},
+	pages={134--142},
+	location={Paris, France}
+}
+
+@article{Goss1989Self,
+    author = {Goss, S. and Aron, S. and Deneubourg, J.-L. and Pasteels, J.-M.},
+    doi = {10.1007/BF00462870},
+    journal = {Naturwissenschaften},
+    month = dec,
+    number = {12},
+    title = {{Self-organized shortcuts in the Argentine ant}},
+    volume = {76},
+    year = {1989}
+}
+
+@article{Deneubourg1990Self,
+    author = {Deneubourg, J.-L. and Aron, S. and Goss, S. and Pasteels, J.-M.},
+    doi = {10.1007/BF01417909},
+    journal = {Journal of Insect Behavior},
+    month = mar,
+    number = {2},
+    pages = {159--168},
+    title = {{The self-organizing exploratory pattern of the argentine ant}},
+    volume = {3},
+    year = {1990}
+}
+
+
+/****************
+ * Algo de flot *
+ ****************/
+ 
+@article{Ford1956Maximal,
+	author = {Ford, L. R. and Fulkerson, D. R.},
+	journal = {Canadian Journal of Mathematics},
+	year = {1956},
+	pages = {399--404},
+	title = {{Maximal Flow through a Network}},
+	volume = {8},
+	number = {3}
+}
+
+/********************
+ * Modele de graphe *
+ ********************/
+ 
+@article{Watts1998Collective,
+  author = {Watts, D. J. and Strogatz, Steven H.},
+  journal = {Nature},
+  month = {June},
+  number = 6684,
+  pages = {440--442},
+  title = {Collective dynamics of small-world networks},
+  volume = 393,
+  year = 1998
+}
+
+@article{Barabasi1999Emergence,
+    address = {Department of Physics, University of Notre Dame, Notre Dame, IN 46556, USA.},
+    author = {Barabasi, A. L. and Albert, R.},
+    journal = {Science (New York, N.Y.)},
+    month = {October},
+    number = {5439},
+    pages = {509--512},
+    title = {{Emergence of scaling in random networks}},
+    volume = {286},
+    year = {1999}
+}
+
+@INPROCEEDINGS{Dorogovtsev2002evolution,
+    author = {Dorogovtsev, S. N. and Mendes, J. F. F.},
+    title = {Evolution of networks},
+    booktitle = {Adv. Phys},
+    year = {2002},
+    pages = {1079--1187}
+}
+
+/*
+ * Divers
+ */
+ 
+@article{Friedkin1983Horizons,
+    author = {Friedkin, N. E.},
+    journal = {Social Forces},
+    number = {1},
+    pages = {57--77},
+    title = {{Horizons of Observability and Limits of Informal Control in Organizations}},
+    volume = {62},
+    year = {1983}
+}
+
+﻿@article {Sadibussi1966Centrality,
+	author = {Sabidussi, Gert},
+	title = {The centrality index of a graph},
+	journal = {Psychometrika},
+	publisher = {Springer New York},
+	pages = {581-603},
+	volume = {31},
+	note = {10.1007/BF02289527},
+	year = {1966}
+}
