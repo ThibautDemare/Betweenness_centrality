@@ -206,10 +206,10 @@ public class Main {
 		/*
 		 * Le Havre
 		 */
-		/*System.out.println("Lancement des tests sur Le Havre");
+		System.out.println("Lancement des tests sur Le Havre");
 		String nameMapLH = "LeHavre_Medium";
 		AllTestOnVilles atolh = new AllTestOnVilles(nameMapLH, false, 0);
-		for(int i=0; i<entities.length; i++){
+		/*for(int i=0; i<entities.length; i++){
 			int nbPair;
 			//if(i<2)
 				//nbPair = numberOfPairToUsed.length;
@@ -226,11 +226,11 @@ public class Main {
 		}
 		//Random Walk classique
 		atolh.setNbIteration(100);
-		atolh.testRandomWalk();
+		atolh.testRandomWalk();/**/
 		//Classical betweenness centrality
 		atolh.testClassicalBetweennessCentrality(true, "length");
-		atolh.testClassicalBetweennessCentrality(true, "travelTime");
-		atolh.testClassicalBetweennessCentrality(false, "noweight");
+		//atolh.testClassicalBetweennessCentrality(true, "travelTime");
+		//atolh.testClassicalBetweennessCentrality(false, "noweight");
 		r.gc();/**/
 		
 		/*
@@ -478,8 +478,8 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		//Main.compute();
-		Main.compare();
+		Main.compute();
+	//	Main.compare();
 	}
 
 }

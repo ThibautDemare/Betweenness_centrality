@@ -105,10 +105,6 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	public void init(Graph arg) {
 		setGraph(arg);
 		
-		ConnectedComponents cc = new ConnectedComponents(arg);
-		cc.setCountAttribute("ConnectedComponentId");
-		cc.compute();
-		
 		//Add the attribute containing the betweenness centrality of the node 
 		for(Node n : getGraph())
 			n.addAttribute(getBetweennessCentralityAttribute(), 0);
@@ -148,11 +144,15 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		 */
 	}
 	
+	//In order to see it is more fast.
+	long t1=0, t2=0, d1=0, d2=0;
+	
 	/**
 	 * The algorithm : compute each paths and define the centrality.
 	 */
 	public void compute() {
-		int i = 0;
+		int i = 1;
+		t1 = System.currentTimeMillis();
 		while(!end){
 			
 			/*String[] paire0 = getCurrentPaire();
@@ -162,13 +162,13 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 			dest0.addAttribute("ui.style", "fill-color : red; size : 10px;");/**/
 			
 			System.out.println(i);
-			step();
+			step(i);
 			
 			/*source0.addAttribute("ui.style", "fill-color : blue; size : 1px;");
 			dest0.addAttribute("ui.style", "fill-color : blue; size : 1px;");/**/
 			
 			i++;
-			if(i>200)
+			if(i>20000)
 				end = true;
 		}
 		
@@ -201,7 +201,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * Get the pheromone on an edge and of a given type.
 	 * @param e the edge
 	 * @param type the type of pheromone
-	 * @return the value o pheromone on the edge
+	 * @return the value of pheromone on the edge
 	 */
 	private double getPheromone(Edge e, String type){
 		if(!e.hasAttribute("pheromones"))
@@ -217,13 +217,15 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	/**
 	 * Execute one step of the algorithm.
 	 */
-	public void step(){
+	public void step(int etape){
 		for(Ant en : listAnt){
 			Path p = en.makePath();
 			if(listPath[currentPaire]== null || listPath[currentPaire].getPathWeight(weightAttribute)>p.getPathWeight(weightAttribute)){
-				listPath[currentPaire] = p;//new Path(p);
+				listPath[currentPaire] = p;
 			}
 		}
+		//It is not done before, in the for, in order to avoid the creation of many useless copy of path which obstruct the memory space.
+		listPath[currentPaire] = listPath[currentPaire].getACopy();
 		
 		for(Ant en : listAnt){
 			en.depositPheromone();
@@ -233,7 +235,16 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		if(currentPaire >= numberOfPairToUsed)
 			currentPaire = 0;
 		
-		evaporatePheromone();
+		if(etape%numberOfPairToUsed == 0){
+			//In order to see it is more fast.
+			t2 = System.currentTimeMillis();
+			d2 = t2 - t1;
+			System.out.println("Différence de temps = "+(d2-d1));
+			d1 = d2;
+			t1 = t2;
+			
+			evaporatePheromone();
+		}
 	}
 
 	/**
@@ -245,7 +256,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	}
 	
 	/**
-	 * Return the next pair of node. If the current pair have been computed, it return a new pair
+	 * Return a new pair of node.
 	 * @return a pair of node
 	 */
 	public String[] selectPairNode(){
@@ -253,24 +264,77 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		do{
 			n1 = getGraph().getNode(getRandom().nextInt(getGraph().getNodeCount()));
 			n2 = getGraph().getNode(getRandom().nextInt(getGraph().getNodeCount()));
-		}while(n2==null || n1==n2 || n1.getNumber("ConnectedComponentId")!=n2.getNumber("ConnectedComponentId"));
+			ArrayList<Node> possibilities = isTherePath(n1, n2);
+			
+			//If there is no path, we must change
+			if(possibilities != null){
+				//If the origin node is not isolated
+				if(possibilities.size()>1){
+					n2 = possibilities.get(random.nextInt(possibilities.size()-1)+1);
+				}
+				else{
+					n1 = null;
+				}
+			}
+		}while(n1 == null);
 		return new String[]{n1.getId(), n2.getId()};
+	}
+	
+	/**
+	 * Search a path between an origin node and a destination node. If a path is found, the returned list is null (because the reachable node list is not necessary), else, the returned list contains all reachable node. 
+	 * @param origin The origin node
+	 * @param dest The destination node
+	 * @return	A list containing all reachable node if no path is found, or null if a path is found.
+	 */
+	private ArrayList<Node> isTherePath(Node origin, Node dest){
+		ArrayList<Node> open = new ArrayList<Node>();
+		ArrayList<Node> close = new ArrayList<Node>();
+		open.add(origin);
+		while(!open.isEmpty()){
+			Node current = open.remove(0);
+			close.add(current);
+			for(Edge e : current.getLeavingEdgeSet()){
+				Node o = e.getOpposite(current);
+				if(o == dest)
+					return null;
+				if(!close.contains(o) && !open.contains(o))
+					open.add(o);
+			}
+		}
+		return close;
 	}
 	
 	private void evaporatePheromone(){
 		/*
 		 * Voir pour supprimer les pheromones qui sont a zero afin de limiter la memoire utilisee.
 		 */
+		int i = 0;
+		double sum = 0;
+		double max = Double.NEGATIVE_INFINITY;
+		double min = Double.POSITIVE_INFINITY;
+		int nbPetits = 0;
 		for(Edge e : graph.getEdgeSet()){
 			if(e.hasAttribute("pheromones")){
 				HashMap<String, Double> pheromones = (HashMap<String, Double>)(e.getAttribute("pheromones"));
 				for(String s : pheromones.keySet()){
 					double d = pheromones.get(s);
 					d = d*Ant.rho;
+					if(d<Ant.minPheromone)
+						d = Ant.minPheromone;
+					sum += d;
+					max = Math.max(d, max);
+					min = Math.min(d, min);
+					if(d<10)
+						nbPetits ++ ;
+					i++;
 					pheromones.put(s, d);
 				}
 			}
 		}
+		System.out.println("moyenne pheromone = "+sum/i);
+		System.out.println("max pheromone = "+max);
+		System.out.println("min pheromone = "+min);
+		System.out.println("nb small = "+nbPetits);
 	}
 	
 	/**
@@ -297,7 +361,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	}
 	
 	/*
-	 * Functions which the goal is to manage the average attributes.
+	 * Functions whose the goal is to manage the average attributes.
 	 */
 	
 	public void clear(){

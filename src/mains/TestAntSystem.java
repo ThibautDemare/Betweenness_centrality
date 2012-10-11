@@ -41,7 +41,7 @@ public class TestAntSystem {
 		//AntBetweennessCentralityPivots
 		System.out.println("AntBetweennessCentralityPivots");
 		AntBetweennessCentralityPivots antsys = new AntBetweennessCentralityPivots(100);
-		antsys.setNumberOfPairToUsed(10);
+		antsys.setNumberOfPairToUsed(2000);
 		antsys.init(g);
 		antsys.setWeightAttribute("length");
 		antsys.compute();
@@ -57,7 +57,7 @@ public class TestAntSystem {
 		//g.showGraph(false);
 		
 		Misc.saveGraph(System.getProperty("user.dir" )+File.separator+"DGS_and_results"+File.separator+"Villes"+File.separator
-						+"LeHavre_Medium_ant_res.dgs", g);/**/
+						+"LeHavre_Medium_ant_res_2000paires.dgs", g);/**/
 		
 		/*String mesures[]={
 				"AntBetweennessCentralityPivots",
