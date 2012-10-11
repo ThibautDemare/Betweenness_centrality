@@ -129,6 +129,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 			listPaire = new String[getNumberOfPairToUsed()][2];
 			for(int i=0; i<listPaire.length; i++)
 				listPaire[i] = selectPairNode();
+			//Must be tested if the cast allow to pass String[][]
 			arg.addAttribute("listPaire", listPaire);
 		}
 		
@@ -154,19 +155,8 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		int i = 1;
 		t1 = System.currentTimeMillis();
 		while(!end){
-			
-			/*String[] paire0 = getCurrentPaire();
-			Node source0 = graph.getNode(paire0[0]);
-			source0.addAttribute("ui.style", "fill-color : black; size : 10px;");
-			Node dest0 = graph.getNode(paire0[1]);
-			dest0.addAttribute("ui.style", "fill-color : red; size : 10px;");/**/
-			
 			System.out.println(i);
 			step(i);
-			
-			/*source0.addAttribute("ui.style", "fill-color : blue; size : 1px;");
-			dest0.addAttribute("ui.style", "fill-color : blue; size : 1px;");/**/
-			
 			i++;
 			if(i>20000)
 				end = true;

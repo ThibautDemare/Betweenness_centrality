@@ -41,7 +41,7 @@ public class Ant {
 	}
 	
 	public Path makePath(){
-		p.clear();//p = new Path();
+		p.clear();
 		tabuList.clear();
 		
 		String[] paire = abcp.getCurrentPaire();
@@ -49,33 +49,8 @@ public class Ant {
 		dest = abcp.getGraph().getNode(paire[1]);
 		p.setRoot(current);
 		
-		long t1 = System.currentTimeMillis();
-
 		while(p.peekNode()!=dest){
-			long t2 = System.currentTimeMillis();
-
-			if(((t2-t1)/1000)>240){
-				System.out.println("Temps dépassé : recherche d'un chemin avec dijsktra ...");
-				Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "length");
-
-				// Compute the shortest paths in g from A to all nodes
-				dijkstra.init(current.getGraph());
-				dijkstra.setSource(p.getRoot());
-				dijkstra.compute();
-				
-				System.out.println(dijkstra.getPath(dest));
-				System.exit(0);
-			}
-			/*current.addAttribute("ui.style", "fill-color : blue; size : 1px;");/**/
-			
 			current = p.peekNode();
-			
-			/*current.addAttribute("ui.style", "fill-color : grey; size : 10px;");
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-			}/**/
 			
 			if(nextAreTabu(current) || current.getLeavingEdgeSet().size()<=0){
 				jumpBack();
@@ -92,7 +67,7 @@ public class Ant {
 					}
 					else{
 						if(e.getOpposite(current)!=dest){
-							double ed = heuristic.h(current, e.getOpposite(current), dest);//e.getNumber(abcp.getWeightAttribute());//euclideanDistance(e.getOpposite(current), dest);//
+							double ed = heuristic.h(current, e.getOpposite(current), dest);
 							h = 1 / ed;
 							pheromone = getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
 							proba = Math.pow(h, alpha)*Math.pow(pheromone, beta);
@@ -105,7 +80,7 @@ public class Ant {
 					sum += proba;
 				}
 				
-				//Select the edge with probability dependant of heuristic and pheromone
+				//Select the edge with probability dependant of heuristic and pheromones
 				Edge selected = null;
 				Object[] neighbors = current.getLeavingEdgeSet().toArray();
 				double rand = abcp.getRandom().nextDouble();
@@ -113,9 +88,7 @@ public class Ant {
 				for(int i=0; i<neighbors.length && selected == null; i++){
 					Edge e = (Edge) neighbors[i];
 					proba += e.getNumber("proba")/sum;
-					//System.out.println("proba e = "+e.getNumber("proba"));
 					if(rand<proba){
-						//System.out.println("proba e = "+e.getNumber("proba")+" et i = "+i);
 						selected = e;
 					}
 				}
@@ -125,14 +98,6 @@ public class Ant {
 				tabuList.add(p.peekEdge());
 				if(tabuList.size()>tabuMemorySize)
 					tabuList.remove(0);
-				
-				/*
-				 * Revoir la manière d'utiliser la tabu list : les éléments qui la constitue peuvent être pris mais avec une proba très très faible
-				 * Plutot que de contenir des noeuds la tabu list devrait contenir des aretes.
-				 * 
-				 * Revoir également la sélection des aretes avec une roue de la fortune un peu mieux fichu!
-				 * placer les arcs sur tableau, tirer un dé, parcourir le tableau en sommant leur proba, et quand la somme dépasse la valeur tiré aléatoirement alors on a le bon arc
-				 */
 			}
 		}
 		p.removeLoops();
@@ -212,39 +177,6 @@ public class Ant {
 		public abstract double h(Node current, Node next, Node dest);
 	}
 	
-	public class EuclideanHeuristic extends Heuristic{
-		/**
-		 * Heuristics of euclidean distance
-		 * return the euclidean distance between the two nodes in parameters 
-		 */
-		public double h(Node current, Node next, Node dest){
-			Object[] xyz1;
-			Object[] xyz2;
-			
-			if(next.hasAttribute("xyz")){
-				xyz1=next.getAttribute("xyz");
-				xyz2=dest.getAttribute("xyz");
-			}
-			else if(next.hasAttribute("xy")){
-				xyz1=next.getAttribute("xy");
-				xyz2=dest.getAttribute("xy");
-			}
-			else{
-				xyz1=new Double[2];
-				xyz1[0]=next.getNumber("x");
-				xyz1[1]=next.getNumber("y");
-				
-				xyz2=new Double[2];
-				xyz2[0]=dest.getNumber("x");
-				xyz2[1]=dest.getNumber("y");
-			}
-			
-			return Math.sqrt(
-					  ((Double)(xyz1[0])-(Double)(xyz2[0]))*((Double)(xyz1[0])-(Double)(xyz2[0]))
-					 +((Double)(xyz1[1])-(Double)(xyz2[1]))*((Double)(xyz1[1])-(Double)(xyz2[1])));
-		}
-	}
-	
 	public class RandomHeuristic extends Heuristic{
 		/**
 		 * Heuristics of euclidean distance
@@ -252,16 +184,6 @@ public class Ant {
 		 */
 		public double h(Node current, Node next, Node dest){
 			return Math.random()+1;
-		}
-	}
-	
-	public class SmallestEdgeHeuristic extends Heuristic{
-		/**
-		 * Heuristics of euclidean distance
-		 * return the euclidean distance between the two nodes in parameters 
-		 */
-		public double h(Node current, Node next, Node dest){
-			return current.getEdgeToward(next).getNumber(abcp.getWeightAttribute());
 		}
 	}
 }
