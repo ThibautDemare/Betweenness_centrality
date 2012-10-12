@@ -22,8 +22,8 @@ public class Ant {
 	
 	protected Heuristic heuristic;
 	
-	protected ArrayList<Edge> tabuList;
-	protected int tabuMemorySize = 200;
+	protected Edge[] tabuList;
+	protected int tabuMemorySize = 20;
 	protected double tabuProba = 1.0E-15;
 	
 	protected static double Q = 10000;
@@ -36,39 +36,44 @@ public class Ant {
 	public void init(AntBetweennessCentralityPivots abcp){
 		this.abcp = abcp;
 		p = new Path();
-		tabuList = new ArrayList<Edge>();
+		tabuList = new Edge[tabuMemorySize];
 		heuristic = new RandomHeuristic();
 	}
 	
-	public Path makePath(){
-		p.clear();
-		tabuList.clear();
+	protected Path makePath(){
+		//Variable for compute proba
+		double sum = 0;
+		double h;
+		double pheromone;
+		double proba;
+		double rand;
 		
+		//initiate path
+		p.clear();
 		String[] paire = abcp.getCurrentPaire();
 		current = abcp.getGraph().getNode(paire[0]);
 		dest = abcp.getGraph().getNode(paire[1]);
 		p.setRoot(current);
 		
+		//initiate tabu list
+		clearTabuList();
+		int iTabuList = 0;
+		
 		while(p.peekNode()!=dest){
 			current = p.peekNode();
 			
-			if(nextAreTabu(current) || current.getLeavingEdgeSet().size()<=0){
+			if(current.getLeavingEdgeSet().size()<=0){
 				jumpBack();
 			}
 			else{
-				double sum = 0;
-				double h;
-				double pheromone;
-				
+				sum = 0.;
 				for(Edge e : current.getLeavingEdgeSet()){
-					double proba;
-					if(tabuList.contains(e)){
+					if(tabuListContains(e)){
 						proba = tabuProba;
 					}
 					else{
 						if(e.getOpposite(current)!=dest){
-							double ed = heuristic.h(current, e.getOpposite(current), dest);
-							h = 1 / ed;
+							h = 1 / heuristic.h(current, e.getOpposite(current), dest);;
 							pheromone = getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
 							proba = Math.pow(h, alpha)*Math.pow(pheromone, beta);
 						}
@@ -82,11 +87,10 @@ public class Ant {
 				
 				//Select the edge with probability dependant of heuristic and pheromones
 				Edge selected = null;
-				Object[] neighbors = current.getLeavingEdgeSet().toArray();
-				double rand = abcp.getRandom().nextDouble();
-				double proba = 0;
-				for(int i=0; i<neighbors.length && selected == null; i++){
-					Edge e = (Edge) neighbors[i];
+				rand = abcp.getRandom().nextDouble();
+				proba = 0;
+				for(int i=0; i<current.getLeavingEdgeSet().size() && selected == null; i++){
+					Edge e = current.getLeavingEdge(i);
 					proba += e.getNumber("proba")/sum;
 					if(rand<proba){
 						selected = e;
@@ -95,9 +99,9 @@ public class Ant {
 				p.add(current, selected);
 				
 				//Add the current node to the tabu list
-				tabuList.add(p.peekEdge());
-				if(tabuList.size()>tabuMemorySize)
-					tabuList.remove(0);
+				tabuList[iTabuList++] = p.peekEdge();
+				if(iTabuList>=tabuMemorySize)
+					iTabuList = 0;
 			}
 		}
 		p.removeLoops();
@@ -108,39 +112,42 @@ public class Ant {
 	 * Manage the pheromones
 	 */
 	
-	public void depositPheromone(){
+	protected void depositPheromone(){
 		double length = p.getPathWeight(abcp.getWeightAttribute());
+		double pheromones;
 		for(Edge e : p.getEdgePath()){
-			double pheromones = getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
+			pheromones = getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
 			pheromones += Q/length;
 			setPheromone(e, p.getRoot().getId()+"_"+dest.getId(), pheromones);
 		}
 	}
 	
 	private double getPheromone(Edge e, String type){
-		HashMap<String, Double> pheromones;
+		double[] pheromones;
 		if(!e.hasAttribute("pheromones")){
-			pheromones = new HashMap<String, Double>();
-			e.addAttribute("pheromones", pheromones);
+			pheromones = new double[abcp.getNumberOfPairToUsed()];
+			//System.out.println("here");
 		}
-		else
-			pheromones = (HashMap<String, Double>)(e.getAttribute("pheromones"));
-		
-		if(!pheromones.containsKey(type)){
-			pheromones.put(type, initialPheromone);
-			e.addAttribute("pheromones", pheromones);
+		else{
+			pheromones = e.getAttribute("pheromones");
+			//System.out.println("or here?");
 		}
+		//System.out.println("pheromones[abcp.getIndexCurrentPaire()] = "+pheromones[abcp.getIndexCurrentPaire()]);
+		if(!( (Double)(pheromones[abcp.getIndexCurrentPaire()]) == null) || (pheromones[abcp.getIndexCurrentPaire()] == 0.) )
+			pheromones[abcp.getIndexCurrentPaire()] = initialPheromone;
 		
-		return pheromones.get(type);
+		e.addAttribute("pheromones", pheromones);
+		
+		return pheromones[abcp.getIndexCurrentPaire()];
 	}
 	
 	private void setPheromone(Edge e, String type, double value){
-		HashMap<String, Double> pheromones;
+		double[] pheromones;
 		if(!e.hasAttribute("pheromones"))
-			pheromones = new HashMap<String, Double>();
+			pheromones = new double[abcp.getNumberOfPairToUsed()];
 		else
-			pheromones = (HashMap<String, Double>)(e.getAttribute("pheromones"));
-		pheromones.put(type, value);
+			pheromones = e.getAttribute("pheromones");
+		pheromones[abcp.getIndexCurrentPaire()] = value;
 		e.addAttribute("pheromones", pheromones);
 	}
 	
@@ -148,11 +155,23 @@ public class Ant {
 	 * Manage tabu problem
 	 */
 	
+	public boolean tabuListContains(Edge e){
+		for(int i = 0; i < tabuList.length; i++)
+			if(e == tabuList[i])
+				return true;
+		return false;
+	}
+	
+	public void clearTabuList(){
+		for(int i = 0; i<tabuList.length; i++)
+			tabuList[i] = null;
+	}
+	
 	public boolean nextAreTabu(Node n){
 		int nbNeighbor = 0;
 		int nbNeighborTabu = 0;
 		for(Edge v : n.getLeavingEdgeSet()){
-			if(tabuList.contains(v.getOpposite(n)))
+			if(tabuListContains(v))
 				nbNeighborTabu++;
 			nbNeighbor++;
 		}
@@ -160,8 +179,11 @@ public class Ant {
 	}
 	
 	public void jumpBack(){
-		if(p.size() == 0)
+		if(p.size() <= 1){
+			Node r = p.getRoot();
 			p.clear();
+			p.setRoot(r);
+		}
 		else{
 			int nbDeleted = abcp.getRandom().nextInt(p.size()-1)+1;
 			for(int i=0; i<nbDeleted; i++)

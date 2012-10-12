@@ -1,12 +1,10 @@
 package betweennessCentralityPivots.ant;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 
 import org.graphstream.algorithm.Algorithm;
-import org.graphstream.algorithm.ConnectedComponents;
 import org.graphstream.algorithm.DynamicAlgorithm;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -24,7 +22,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	/**
 	 * List of betweennessCentralityPivots.ant
 	 */
-	protected ArrayList<Ant> listAnt;
+	protected Ant[] listAnt;
 
 	/**
 	 * The name of the class of the entities
@@ -67,9 +65,9 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	protected Path[] listPath;
 	
 	/**
-	 * The indice of the current pair.
+	 * The index of the current pair.
 	 */
-	protected int currentPaire;
+	protected int indexCurrentPaire;
 	
 	/**
 	 * End of the compute
@@ -115,13 +113,13 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		}
 		
 		//Creation of the list which manage the entities
-		setListAnt(new ArrayList<Ant>());
+		setListAnt(new Ant[getAntCount()]);
 		for(int i=0; i<getAntCount(); i++){
-			getListAnt().add(createAnt());
+			getListAnt()[i] = createAnt();
 		}
 
 		// Creation of the list of paire used
-		currentPaire = 0;
+		indexCurrentPaire = 0;
 		if(arg.hasAttribute("listPaire")){
 			listPaire = (String[][]) arg.getAttribute("listPaire");
 		}
@@ -130,7 +128,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 			for(int i=0; i<listPaire.length; i++)
 				listPaire[i] = selectPairNode();
 			//Must be tested if the cast allow to pass String[][]
-			arg.addAttribute("listPaire", listPaire);
+			//arg.addAttribute("listPaire", listPaire);
 		}
 		
 		listPath = new Path[getNumberOfPairToUsed()];
@@ -165,7 +163,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		/*
 		 * This section defines the betweeness centrality on all node and edge which are in shortest paths
 		 */
-		currentPaire = 0;
+		indexCurrentPaire = 0;
 		for(int j=0; j<listPath.length; j++){
 			Path p = listPath[j];
 			System.out.println("j="+j+" p="+p);
@@ -188,45 +186,28 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	}
 	
 	/**
-	 * Get the pheromone on an edge and of a given type.
-	 * @param e the edge
-	 * @param type the type of pheromone
-	 * @return the value of pheromone on the edge
-	 */
-	private double getPheromone(Edge e, String type){
-		if(!e.hasAttribute("pheromones"))
-			return 0.;
-		HashMap<String, Double> pheromones = (HashMap<String, Double>)(e.getAttribute("pheromones"));
-		
-		if(pheromones.containsKey(type))
-			pheromones.put(type, random.nextDouble());
-		
-		return pheromones.get(type);
-	}
-	
-	/**
 	 * Execute one step of the algorithm.
 	 */
 	public void step(int etape){
 		for(Ant en : listAnt){
 			Path p = en.makePath();
-			if(listPath[currentPaire]== null || listPath[currentPaire].getPathWeight(weightAttribute)>p.getPathWeight(weightAttribute)){
-				listPath[currentPaire] = p;
+			if(listPath[indexCurrentPaire]== null || listPath[indexCurrentPaire].getPathWeight(weightAttribute)>p.getPathWeight(weightAttribute)){
+				listPath[indexCurrentPaire] = p;
 			}
 		}
 		//It is not done before, in the for, in order to avoid the creation of many useless copy of path which obstruct the memory space.
-		listPath[currentPaire] = listPath[currentPaire].getACopy();
+		listPath[indexCurrentPaire] = listPath[indexCurrentPaire].getACopy();
 		
 		for(Ant en : listAnt){
 			en.depositPheromone();
 		}
 		
-		currentPaire++;
-		if(currentPaire >= numberOfPairToUsed)
-			currentPaire = 0;
+		indexCurrentPaire++;
+		if(indexCurrentPaire >= numberOfPairToUsed)
+			indexCurrentPaire = 0;
 		
 		if(etape%numberOfPairToUsed == 0){
-			//In order to see it is more fast.
+			//In order to see if it is more fast.
 			t2 = System.currentTimeMillis();
 			d2 = t2 - t1;
 			System.out.println("Différence de temps = "+(d2-d1));
@@ -242,7 +223,15 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * @return
 	 */
 	public String[] getCurrentPaire(){
-		return listPaire[currentPaire];
+		return listPaire[indexCurrentPaire];
+	}
+	
+	/**
+	 * Return the index of the current pair of node computed
+	 * @return
+	 */
+	public int getIndexCurrentPaire(){
+		return indexCurrentPaire;
 	}
 	
 	/**
@@ -295,33 +284,38 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	}
 	
 	private void evaporatePheromone(){
-		/*
-		 * Voir pour supprimer les pheromones qui sont a zero afin de limiter la memoire utilisee.
-		 */
-		int i = 0;
+		//Some attributes in order to analyse evolution of pheromone quantity => not in final version
+		int cpt = 0;
 		double sum = 0;
 		double max = Double.NEGATIVE_INFINITY;
 		double min = Double.POSITIVE_INFINITY;
 		int nbPetits = 0;
+		
 		for(Edge e : graph.getEdgeSet()){
 			if(e.hasAttribute("pheromones")){
-				HashMap<String, Double> pheromones = (HashMap<String, Double>)(e.getAttribute("pheromones"));
-				for(String s : pheromones.keySet()){
-					double d = pheromones.get(s);
+				Double[] pheromones = (Double[])(e.getAttribute("pheromones"));
+				for(int i = 0; i<0; i++){
+					double d = pheromones[i];
 					d = d*Ant.rho;
 					if(d<Ant.minPheromone)
 						d = Ant.minPheromone;
+					pheromones[i] = d;
+					
+					//piece of code in order to analyse the evolution of pheromone => it will be removed in final version
 					sum += d;
 					max = Math.max(d, max);
 					min = Math.min(d, min);
 					if(d<10)
 						nbPetits ++ ;
-					i++;
-					pheromones.put(s, d);
+					cpt++;
+					
 				}
+				e.setAttribute("pheromones", pheromones);
 			}
 		}
-		System.out.println("moyenne pheromone = "+sum/i);
+		
+		//piece of code in order to analyse the evolution of pheromone => it will be removed in final version
+		System.out.println("moyenne pheromone = "+sum/cpt);
 		System.out.println("max pheromone = "+max);
 		System.out.println("min pheromone = "+min);
 		System.out.println("nb small = "+nbPetits);
@@ -486,11 +480,11 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		this.antCount = antCount;
 	}
 
-	public synchronized ArrayList<Ant> getListAnt() {
+	public synchronized Ant[] getListAnt() {
 		return listAnt;
 	}
 
-	public synchronized void setListAnt(ArrayList<Ant> listAnt) {
+	public synchronized void setListAnt(Ant[] listAnt) {
 		this.listAnt = listAnt;
 	}
 

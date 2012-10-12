@@ -17,7 +17,7 @@ public class TestAntSystem {
 	public void test(){
 		//Creation du graphe
 		System.out.println("Création du graphe depuis le DGS");
-		MultiNetwork g = new MultiNetwork("LeHavre_Medium_ant");
+		MultiNetwork g = new MultiNetwork("LeHavre_Medium");
 		//Grid g = new Grid(10, false, false, false);
 		//DorogovtsevMendes g = new DorogovtsevMendes(1000, false);
 		
