@@ -17,6 +17,7 @@ public class TestAntSystem {
 	public void test(){
 		//Creation du graphe
 		System.out.println("Création du graphe depuis le DGS");
+		//MultiNetwork g = new MultiNetwork("LeHavre_Medium");
 		MultiNetwork g = new MultiNetwork("LeHavre_Medium");
 		//Grid g = new Grid(10, false, false, false);
 		//DorogovtsevMendes g = new DorogovtsevMendes(1000, false);
@@ -25,43 +26,36 @@ public class TestAntSystem {
 		//Centralite intermediaire
 		/*System.out.println("Centralite intermediaire...");
 		BetweennessCentrality bcb = new BetweennessCentrality();
-		bcb.setUnweighted();
-		bcb.setCentralityAttributeName("BetweennessCentrality_noweight");
+		bcb.setWeightAttributeName("length");
+		bcb.setCentralityAttributeName("BetweennessCentrality_length");
 		bcb.init(g);
 		bcb.compute();
 		ChangeGraph.clear(g);
 		Misc.saveGraph(System.getProperty("user.dir" )+File.separator+".."+File.separator+"Grid"+File.separator
-				+"Grid_"
-				+g.getNbLine()+"_"
-				+g.isCross()+"_"
-				+g.isTore()+".dgs", g);/**/
+				+"LeHavre_Medium.dgs", g);/**/
+
 		
 		//g.showGraph(false);
 		
 		//AntBetweennessCentralityPivots
 		System.out.println("AntBetweennessCentralityPivots");
 		AntBetweennessCentralityPivots antsys = new AntBetweennessCentralityPivots(100);
-		antsys.setNumberOfPairToUsed(2000);
+		antsys.setNumberOfPairToUsed(400);
 		antsys.init(g);
 		antsys.setWeightAttribute("length");
 		antsys.compute();
 		antsys.terminate();
 		
-		/*Misc.saveGraph(System.getProperty("user.dir" )+File.separator+".."+File.separator+"Grid"+File.separator
-				+"Grid_"
-				+g.getNbLine()+"_"
-				+g.isCross()+"_"
-				+g.isTore()+".dgs", g);/**/
-		
 		//ChangeGraph.updateGraph(g, "AntBetweennessCentralityPivots");
 		//g.showGraph(false);
 		
 		Misc.saveGraph(System.getProperty("user.dir" )+File.separator+"DGS_and_results"+File.separator+"Villes"+File.separator
-						+"LeHavre_Medium_ant_res_2000paires.dgs", g);/**/
+						+"LeHavre_Medium_ant_res_"+antsys.getNumberOfPairToUsed()+"paires.dgs", g);/**/
 		
-		/*String mesures[]={
+		String mesures[]={
 				"AntBetweennessCentralityPivots",
-				"BetweennessCentrality_noweight",
+				//"BetweennessCentrality_noweight",
+				"BetweennessCentrality_length"
 			};
 		double s;
 		// Mesure statistique 
@@ -85,7 +79,7 @@ public class TestAntSystem {
 			}
 		}
 		//Fichiers gnuplot
-		String filePath = System.getProperty("user.dir" )+File.separator+".."+File.separator+"Grid"+File.separator;
+		String filePath = System.getProperty("user.dir" )+File.separator+"DGS_and_results"+File.separator+"Villes"+File.separator;
 		System.out.println("Creation des fichiers pour gnuplot (repartition2)");
 		for(int i=0; i<mesures.length; i++){
 			for(int j=0; j<mesures.length; j++){

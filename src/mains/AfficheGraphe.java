@@ -20,7 +20,8 @@ public class AfficheGraphe {
 		//SmallWorld g = new SmallWorld(1000, 4, 0.01, false);
 		
 		//String nameMap = "LeHavre_Medium_ant_res";
-		String nameMap = "LeHavre_Medium";
+		//String nameMap = "LeHavre_Medium";
+		String nameMap = "LeHavre_Medium_ant_res_500paires";
 		//String nameMap = "Rouen_Medium_2";
 		//String nameMap = "Paris_Medium";
 		MultiNetwork g = new MultiNetwork(nameMap);/**/
@@ -38,9 +39,9 @@ public class AfficheGraphe {
 		//String att = "BiasedRandomWalkBetweennessCentrality";
 		//String att = "random_walk_passes_average";
 		//String att = "BetweennessCentrality_travelTime";
-		String att = "BetweennessCentrality_length";
+		//String att = "BetweennessCentrality_length";
 		//String att = "BetweennessCentrality_noweigth";
-		//String att = "AntBetweennessCentralityPivots";
+		String att = "AntBetweennessCentralityPivots";
 		
 		ChangeGraph.updateGraph(g, att);
 		

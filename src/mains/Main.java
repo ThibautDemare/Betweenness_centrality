@@ -25,7 +25,7 @@ public class Main {
 	//	AStarEntityEuclideanDistance.class.getName(),
 	//	BiasedByEuclideanDistanceEntity.class.getName(),
 	//	BiasedByTravelTimeEntity.class.getName(),
-		RandomWalkEntity.class.getName(),
+	//	RandomWalkEntity.class.getName(),
 	//	UnbiasedEntity.class.getName()
 	};
 	protected static int[] numberOfPairToUsed = {
@@ -410,7 +410,7 @@ public class Main {
 		/*
 		 * Le Havre
 		 */
-		/*System.out.println("Lancement des tests sur Le Havre");
+		System.out.println("Lancement des tests sur Le Havre");
 		String nameMapLH = "LeHavre_Medium";
 		AllTestOnVilles atolh = new AllTestOnVilles(nameMapLH, false, 0);
 		for(int i=0; i<entities.length; i++){
@@ -433,7 +433,7 @@ public class Main {
 		/*
 		 * Rouen
 		 */
-		System.out.println("Lancement des tests sur Rouen");
+		/*System.out.println("Lancement des tests sur Rouen");
 		String nameMapRouen = "Rouen_Medium";
 		AllTestOnVilles ator = new AllTestOnVilles(nameMapRouen, false, 0);
 		for(int i=0; i<entities.length; i++){

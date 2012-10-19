@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Random;
 
 import org.graphstream.algorithm.Algorithm;
+import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.algorithm.DynamicAlgorithm;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Graph;
@@ -75,6 +76,11 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	protected boolean end;
 	
 	/**
+	 * Number of the step
+	 */
+	protected int step;
+	
+	/**
 	 * Constructor of this class
 	 * @param entityCount Number of betweennessCentralityPivots.ant used
 	 */
@@ -88,13 +94,17 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		//The calculation is finished ?
 		end = false;
 		
+		//The class name of the ant. The user could change the ant.
 		antClassName = Ant.class.getName();
+		
+		//Step number
+		step = 0;
 		
 		//Initialisation of the name of the attribute of the betweenness centrality
 		betweennessCentralityAttribute = "AntBetweennessCentralityPivots";
 		
 		//The random object 
-		random = new Random(System.currentTimeMillis());
+		random = new Random(System.currentTimeMillis());//987654321//123456789//
 	}
 
 	/**
@@ -150,13 +160,12 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * The algorithm : compute each paths and define the centrality.
 	 */
 	public void compute() {
-		int i = 1;
 		t1 = System.currentTimeMillis();
 		while(!end){
-			System.out.println(i);
-			step(i);
-			i++;
-			if(i>20000)
+			System.out.println(step);
+			step();
+			step++;
+			if(step>200)
 				end = true;
 		}
 		
@@ -185,15 +194,37 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		}
 	}
 	
+	public void compareResultat(){
+		for(int j=0; j<listPath.length; j++){
+			Path p = listPath[j];
+			Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "length");
+			dijkstra.init(graph);
+			dijkstra.setSource(p.getRoot());
+			dijkstra.compute();
+			System.out.println("différence = "+(p.getPathWeight("length")-dijkstra.getPathLength(p.peekNode())));
+			System.out.println("Longueur Dijsktra = "+dijkstra.getPathLength(p.peekNode()));
+			System.out.println("Longueur fourmis = "+p.getPathWeight("length"));
+			int nbNodeCommun = 0;
+			for(Node n : p.getNodeSet()){
+				if(dijkstra.getPath(p.peekNode()).contains(n))
+					nbNodeCommun++;
+			}
+			System.out.println("Nb node en commun = "+nbNodeCommun);
+			System.out.println("Nb node dijsktra = "+dijkstra.getPath(p.peekNode()).getNodeCount());
+		}
+	}
+	
 	/**
 	 * Execute one step of the algorithm.
 	 */
-	public void step(int etape){
+	public void step(){
+		int i = 0;
 		for(Ant en : listAnt){
 			Path p = en.makePath();
 			if(listPath[indexCurrentPaire]== null || listPath[indexCurrentPaire].getPathWeight(weightAttribute)>p.getPathWeight(weightAttribute)){
 				listPath[indexCurrentPaire] = p;
 			}
+			//System.out.println("fourmis n°"+(i++));
 		}
 		//It is not done before, in the for, in order to avoid the creation of many useless copy of path which obstruct the memory space.
 		listPath[indexCurrentPaire] = listPath[indexCurrentPaire].getACopy();
@@ -206,14 +237,14 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		if(indexCurrentPaire >= numberOfPairToUsed)
 			indexCurrentPaire = 0;
 		
-		if(etape%numberOfPairToUsed == 0){
+		if((step+1)%numberOfPairToUsed == 0){
 			//In order to see if it is more fast.
 			t2 = System.currentTimeMillis();
 			d2 = t2 - t1;
 			System.out.println("Différence de temps = "+(d2-d1));
 			d1 = d2;
 			t1 = t2;
-			
+			compareResultat();/**/
 			evaporatePheromone();
 		}
 	}
@@ -289,36 +320,46 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		double sum = 0;
 		double max = Double.NEGATIVE_INFINITY;
 		double min = Double.POSITIVE_INFINITY;
-		int nbPetits = 0;
-		
+		double nbMax = 0;
+		double nbMin = 0;
 		for(Edge e : graph.getEdgeSet()){
 			if(e.hasAttribute("pheromones")){
-				Double[] pheromones = (Double[])(e.getAttribute("pheromones"));
-				for(int i = 0; i<0; i++){
+				double[] pheromones = e.getAttribute("pheromones");
+				for(int i = 0; i<pheromones.length; i++){
 					double d = pheromones[i];
 					d = d*Ant.rho;
-					if(d<Ant.minPheromone)
-						d = Ant.minPheromone;
-					pheromones[i] = d;
 					
+					if(d<Ant.minPheromone){
+						d = Ant.minPheromone;
+						nbMin++;
+					}
+					if(d > Ant.maxPheromones){
+						d = Ant.maxPheromones;
+						nbMax++;
+					}
+					pheromones[i] = d;
 					//piece of code in order to analyse the evolution of pheromone => it will be removed in final version
 					sum += d;
 					max = Math.max(d, max);
 					min = Math.min(d, min);
-					if(d<10)
-						nbPetits ++ ;
 					cpt++;
 					
 				}
 				e.setAttribute("pheromones", pheromones);
 			}
 		}
+		Ant.maxPathLength = Double.NEGATIVE_INFINITY;
+		Ant.minPathLength = Double.POSITIVE_INFINITY;
 		
 		//piece of code in order to analyse the evolution of pheromone => it will be removed in final version
 		System.out.println("moyenne pheromone = "+sum/cpt);
 		System.out.println("max pheromone = "+max);
 		System.out.println("min pheromone = "+min);
-		System.out.println("nb small = "+nbPetits);
+		System.out.println("nbMax = "+nbMax);
+		System.out.println("nbMin = "+nbMin);
+		System.out.println("nbMinMax = "+(nbMax+nbMin));
+		System.out.println("nb = "+cpt);
+		System.out.println("nb arrete dans PCCC = "+listPath[indexCurrentPaire].getEdgeCount());/**/
 	}
 	
 	/**
@@ -431,6 +472,14 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		return n.getNumber(betweennessCentralityAttribute);
 	}
 	
+	public int getStep() {
+		return step;
+	}
+
+	public void setStep(int step) {
+		this.step = step;
+	}
+
 	public synchronized Random getRandom() {
 		return random;
 	}

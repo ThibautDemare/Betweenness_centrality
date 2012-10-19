@@ -1,10 +1,5 @@
 package betweennessCentralityPivots.ant;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-
-import org.graphstream.algorithm.Dijkstra;
 import org.graphstream.graph.Edge;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.Path;
@@ -23,15 +18,18 @@ public class Ant {
 	protected Heuristic heuristic;
 	
 	protected Edge[] tabuList;
-	protected int tabuMemorySize = 20;
+	protected int tabuMemorySize = 50;
 	protected double tabuProba = 1.0E-15;
 	
-	protected static double Q = 10000;
-	protected static double alpha = 5;
-	protected static double beta = 2;
-	protected static double rho = 0.8;
-	protected static double initialPheromone = 0.001;
-	protected static double minPheromone = 1.0E-8;
+	protected static double alpha = 5;//h
+	protected static double beta = 1;//p
+	protected static double rho = 0.9;
+	protected static double initialPheromone = 10.;
+	protected static double minPheromone = 10.;
+	protected static double maxPheromones = Double.POSITIVE_INFINITY;//75.;
+	
+	protected static double maxPathLength = Double.NEGATIVE_INFINITY;
+	protected static double minPathLength = Double.POSITIVE_INFINITY;
 	
 	public void init(AntBetweennessCentralityPivots abcp){
 		this.abcp = abcp;
@@ -41,8 +39,8 @@ public class Ant {
 	}
 	
 	protected Path makePath(){
-		//Variable for compute proba
-		double sum = 0;
+		//Variable in order to compute proba
+		double sum = 0.;
 		double h;
 		double pheromone;
 		double proba;
@@ -63,6 +61,7 @@ public class Ant {
 			current = p.peekNode();
 			
 			if(current.getLeavingEdgeSet().size()<=0){
+				//There is no escape ! The ant must go back.
 				jumpBack();
 			}
 			else{
@@ -73,8 +72,18 @@ public class Ant {
 					}
 					else{
 						if(e.getOpposite(current)!=dest){
-							h = 1 / heuristic.h(current, e.getOpposite(current), dest);;
-							pheromone = getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
+							h = 2. / heuristic.h(current, e.getOpposite(current), dest);
+							pheromone = 1. + getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
+							
+							//if(pheromone != initialPheromone+1)
+							//	System.out.println(pheromone+"\t et  \t"+h);
+							
+							//Discovery mode
+							if(abcp.getStep()<3)
+								pheromone = 1.;
+							
+							//System.out.println("Math.pow(h, alpha) = "+Math.pow(h, alpha));
+							//System.out.println("Math.pow(pheromone, beta) = "+Math.pow(pheromone, beta));
 							proba = Math.pow(h, alpha)*Math.pow(pheromone, beta);
 						}
 						else {
@@ -105,6 +114,8 @@ public class Ant {
 			}
 		}
 		p.removeLoops();
+		maxPathLength = Math.max(maxPathLength, p.getPathWeight("length"));
+		minPathLength = Math.min(minPathLength, p.getPathWeight("length"));
 		return p;
 	}
 	
@@ -113,11 +124,13 @@ public class Ant {
 	 */
 	
 	protected void depositPheromone(){
-		double length = p.getPathWeight(abcp.getWeightAttribute());
+		double length = 1. + (p.getPathWeight(abcp.getWeightAttribute())-minPathLength) / (maxPathLength-minPathLength);
+		//System.out.println("length ="+length);
 		double pheromones;
 		for(Edge e : p.getEdgePath()){
 			pheromones = getPheromone(e, p.getRoot().getId()+"_"+dest.getId());
-			pheromones += Q/length;
+			pheromones += 1. / length;
+			//System.out.println("1. / length = "+1. / length+" et length = "+length);
 			setPheromone(e, p.getRoot().getId()+"_"+dest.getId(), pheromones);
 		}
 	}
@@ -126,18 +139,15 @@ public class Ant {
 		double[] pheromones;
 		if(!e.hasAttribute("pheromones")){
 			pheromones = new double[abcp.getNumberOfPairToUsed()];
-			//System.out.println("here");
 		}
 		else{
 			pheromones = e.getAttribute("pheromones");
-			//System.out.println("or here?");
 		}
-		//System.out.println("pheromones[abcp.getIndexCurrentPaire()] = "+pheromones[abcp.getIndexCurrentPaire()]);
-		if(!( (Double)(pheromones[abcp.getIndexCurrentPaire()]) == null) || (pheromones[abcp.getIndexCurrentPaire()] == 0.) )
+
+		if((pheromones[abcp.getIndexCurrentPaire()] == 0.) )
 			pheromones[abcp.getIndexCurrentPaire()] = initialPheromone;
-		
+	
 		e.addAttribute("pheromones", pheromones);
-		
 		return pheromones[abcp.getIndexCurrentPaire()];
 	}
 	
@@ -205,7 +215,7 @@ public class Ant {
 		 * return the euclidean distance between the two nodes in parameters 
 		 */
 		public double h(Node current, Node next, Node dest){
-			return Math.random()+1;
+			return Ant.this.abcp.getRandom().nextDouble()+1;
 		}
 	}
 }

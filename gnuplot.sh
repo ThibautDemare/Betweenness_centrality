@@ -116,17 +116,17 @@ function correlation {
 	echo "	  \"../$nameOfGraph/correlation/$nameOfFile\" using \(\$1+2.5\)\:\(\$5\) with boxes lc rgb \"#ffc500\"" >> ./DGS_and_results/Gnuplot/correlation_$nameOfFile.gnuplot
 }
 
-namesOfGraph[0]="DorogovtsevMendes"
-namesOfGraph[1]="Grid"
-namesOfGraph[2]="PreferentialAttachement"
-namesOfGraph[3]="SmallWorld"
-namesOfGraph[4]="Villes"
+#namesOfGraph[0]="DorogovtsevMendes"
+#namesOfGraph[1]="Grid"
+#namesOfGraph[2]="PreferentialAttachement"
+#namesOfGraph[3]="SmallWorld"
+namesOfGraph[0]="Villes"
 
-associatedNamesOfGraph[0]="Dorogovtsev-Mendes"
-associatedNamesOfGraph[1]="Grille simple"
-associatedNamesOfGraph[2]="Attachement préférentiel"
-associatedNamesOfGraph[3]="Petit monde"
-associatedNamesOfGraph[4]="Le Havre"
+#associatedNamesOfGraph[0]="Dorogovtsev-Mendes"
+#associatedNamesOfGraph[1]="Grille simple"
+#associatedNamesOfGraph[2]="Attachement préférentiel"
+#associatedNamesOfGraph[3]="Petit monde"
+associatedNamesOfGraph[0]="Le Havre"
 
 taille=${#associatedNamesOfGraph[@]}
 i=0
@@ -142,7 +142,7 @@ do
 #		repartition1 ${namesOfGraph[$i]} $nameOfFile ${associatedNamesOfGraph[$i]}
 #	done
 	
-	for nameOfFile in $(ls -I *.param ${namesOfGraph[$i]}/repartition2);
+	for nameOfFile in $(ls -I *.param ./DGS_and_results/${namesOfGraph[$i]}/repartition2);
 	do
 		repartition2 ${namesOfGraph[$i]} $nameOfFile ${associatedNamesOfGraph[$i]}
 	done
@@ -170,7 +170,7 @@ do
 	let "i++"
 done
 
-cd Gnuplot
+cd ./DGS_and_results/Gnuplot
 for script in $(ls *.gnuplot)
 do
 	gnuplot $script
