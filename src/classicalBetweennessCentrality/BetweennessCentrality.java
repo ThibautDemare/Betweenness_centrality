@@ -30,6 +30,7 @@ package classicalBetweennessCentrality;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -45,6 +46,10 @@ import org.graphstream.graph.Element;
 import org.graphstream.graph.Graph;
 import org.graphstream.graph.Node;
 import org.graphstream.graph.Path;
+
+import betweennessCentralityPivots.ant.Ant;
+
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
 
 /**
  * Compute the "betweenness" centrality of each vertex of a given graph.
@@ -186,6 +191,10 @@ public class BetweennessCentrality implements Algorithm {
 	protected boolean edgeBetweennessCentrality = true;
 		
 	protected Graph graph;
+	
+	protected Node[][] listNode = null;
+	
+	protected boolean putPheromones = false;
 
 	protected Progress progress = null;
 
@@ -279,6 +288,22 @@ public class BetweennessCentrality implements Algorithm {
 		unweighted = true;
 	}
 
+	public Node[][] getListNode() {
+		return listNode;
+	}
+
+	public void setListNode(Node[][] listNode) {
+		this.listNode = listNode;
+	}
+
+	public boolean isPutPheromones() {
+		return putPheromones;
+	}
+
+	public void setPutPheromones(boolean putPheromones) {
+		this.putPheromones = putPheromones;
+	}
+
 	public boolean isEdgeBetweennessCentrality() {
 		return edgeBetweennessCentrality;
 	}
@@ -309,6 +334,13 @@ public class BetweennessCentrality implements Algorithm {
 	 */
 	public void init(Graph graph) {
 		this.graph = graph;
+		if(listNode == null){
+			listNode = new Node[graph.getNodeCount()][2];
+			int i=0;
+			for(Node n : graph.getNodeSet()){
+				listNode[i++][0] = n;
+			}
+		}
 	}
 
 	/**
@@ -333,13 +365,13 @@ public class BetweennessCentrality implements Algorithm {
 		float n = graph.getNodeCount();
 		float i = 0;
 		
-		for (Node s : graph) {
+		for(int j = 0; j<listNode.length; j++){
+			Node s = listNode[j][0];
 			//initilization
 			PriorityQueue<Node> S = null;
 
 			//Single source shortest path problem
 			if (unweighted){
-				System.out.println("plop");
 				S = simpleExplore(s, graph);//classical explore
 			}else
 				S = dijkstraExplore2(s, graph);//exploration in valued graph
@@ -347,22 +379,32 @@ public class BetweennessCentrality implements Algorithm {
 			// The really new things in the Brandes algorithm are here:
 
 			//accumulation
+			ArrayList<Node> preds = new ArrayList<Node>();
 			while (!S.isEmpty()) {
 				Node w = S.poll();
-
+				
+				//The first "add" to the list is when we have the destination node.
+				if(w == listNode[j][1])
+					preds.add(w);
+				
 				for (Node v : predecessorsOf(w)) {
 					double c = ((sigma(v) / sigma(w)) * (1.0 + delta(w)));
 					setDelta(v, delta(v) + c);
-					//If the user wants to compute the betweenness centrality on edges
-					if(edgeBetweennessCentrality){
-						//We must do an iteration on the entering edge because of multigraph
-						for(Edge e : w.getEnteringEdgeSet()){
-							if(e.getOpposite(w)==v){
-								setCentrality(e, centrality(e) + c);
+					//We must do an iteration on the entering edge because of multigraph
+					for(Edge e : w.getEnteringEdgeSet()){
+						if(e.getOpposite(w)==v){
+							setCentrality(e, centrality(e) + c);
+								
+							if(putPheromones && preds.contains(w)){
+								Ant.setPheromone(e, j, listNode.length, Ant.initialPheromone);
+								preds.add(v);
 							}
 						}
 					}
 				}
+				
+				preds.remove(w);//just in order to economize some memory.
+				
 				if (w != s) {
 					setCentrality(w, centrality(w) + delta(w));
 				}

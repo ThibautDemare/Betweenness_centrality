@@ -377,15 +377,19 @@ public class ChangeGraph {
 
 		// Set the colors.
 		for(Node n: g.getEachNode()) {
-			double passes = n.getNumber(att);
-			double color;
-			if(maxe==mine)
-				color = 0.;
+			if(n.hasAttribute(att)){
+				double passes = n.getNumber(att);
+				double color;
+				if(maxe==mine)
+					color = 0.;
+				else
+					color = ((passes-mine)/(maxe-mine));
+				//when we use the fill-mode:dyn-plain in the stylesheet.
+				//n.setAttribute("ui.color", color);
+				n.changeAttribute("ui.style", "fill-color: "+Misc.getColor(color)+" size: 4px;");//
+			}
 			else
-				color = ((passes-mine)/(maxe-mine));
-			//when we use the fill-mode:dyn-plain in the stylesheet.
-			//n.setAttribute("ui.color", color);
-			n.changeAttribute("ui.style", "fill-color: "+Misc.getColor(color)+" size: 4px;");//
+				n.changeAttribute("ui.style", "fill-color: blue; size: 1px;");
 		}
 
 		mine = Double.POSITIVE_INFINITY;
@@ -410,6 +414,8 @@ public class ChangeGraph {
 				//e.setAttribute("ui.color", color);
 				e.changeAttribute("ui.style", "fill-color: "+Misc.getColor(color)+" size: 1"+""+"px;");//(int)(1+Math.sqrt(color)*2)
 			}
+			else
+				e.changeAttribute("ui.style", "fill-color: blue; size: 1px;");
 		}
 
 	}

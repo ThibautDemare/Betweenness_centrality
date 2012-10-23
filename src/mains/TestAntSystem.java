@@ -40,9 +40,9 @@ public class TestAntSystem {
 		//AntBetweennessCentralityPivots
 		System.out.println("AntBetweennessCentralityPivots");
 		AntBetweennessCentralityPivots antsys = new AntBetweennessCentralityPivots(100);
-		antsys.setNumberOfPairToUsed(400);
-		antsys.init(g);
+		antsys.setNumberOfPairToUsed(1000);
 		antsys.setWeightAttribute("length");
+		antsys.init(g);
 		antsys.compute();
 		antsys.terminate();
 		
@@ -54,7 +54,7 @@ public class TestAntSystem {
 		
 		String mesures[]={
 				"AntBetweennessCentralityPivots",
-				//"BetweennessCentrality_noweight",
+				"InitialBetweennessCentrality",
 				"BetweennessCentrality_length"
 			};
 		double s;

@@ -13,6 +13,8 @@ import org.graphstream.graph.Node;
 import org.graphstream.graph.Path;
 import org.graphstream.stream.SinkAdapter;
 
+import classicalBetweennessCentrality.BetweennessCentrality;
+
 
 public class AntBetweennessCentralityPivots extends SinkAdapter implements Algorithm, DynamicAlgorithm{
 	/**
@@ -58,7 +60,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	/**
 	 * List of all pair of nodes used by the algorithm.
 	 */
-	protected String[][] listPaire;
+	protected Node[][] listPaire;
 	
 	/**
 	 * List of shortest path computed by the ants and associated to each paire of nodes.
@@ -115,11 +117,11 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		
 		//Add the attribute containing the betweenness centrality of the node 
 		for(Node n : getGraph())
-			n.addAttribute(getBetweennessCentralityAttribute(), 0);
+			n.addAttribute(getBetweennessCentralityAttribute(), 0.);
 		
 		//and for the edges
 		for(Edge e: getGraph().getEachEdge()){
-			e.addAttribute(getBetweennessCentralityAttribute(), 0);
+			e.addAttribute(getBetweennessCentralityAttribute(), 0.);
 		}
 		
 		//Creation of the list which manage the entities
@@ -131,10 +133,10 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		// Creation of the list of paire used
 		indexCurrentPaire = 0;
 		if(arg.hasAttribute("listPaire")){
-			listPaire = (String[][]) arg.getAttribute("listPaire");
+			listPaire = (Node[][]) arg.getAttribute("listPaire");
 		}
 		else{
-			listPaire = new String[getNumberOfPairToUsed()][2];
+			listPaire = new Node[getNumberOfPairToUsed()][2];
 			for(int i=0; i<listPaire.length; i++)
 				listPaire[i] = selectPairNode();
 			//Must be tested if the cast allow to pass String[][]
@@ -142,6 +144,16 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		}
 		
 		listPath = new Path[getNumberOfPairToUsed()];
+		
+		System.out.println("Compute with Brandes' algorithm");
+		BetweennessCentrality bcb = new BetweennessCentrality();
+		bcb.setWeightAttributeName("length");
+		bcb.setWeighted();
+		bcb.setCentralityAttributeName("InitialBetweennessCentrality");
+		bcb.setPutPheromones(true);
+		bcb.setListNode(listPaire);
+		bcb.init(graph);
+		bcb.compute();
 	}
 
 	/**
@@ -153,19 +165,16 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		 */
 	}
 	
-	//In order to see it is more fast.
-	long t1=0, t2=0, d1=0, d2=0;
-	
 	/**
 	 * The algorithm : compute each paths and define the centrality.
 	 */
 	public void compute() {
-		t1 = System.currentTimeMillis();
+		System.out.println("Compute with ant co");
 		while(!end){
 			System.out.println(step);
 			step();
 			step++;
-			if(step>200)
+			if(step>6000)
 				end = true;
 		}
 		
@@ -218,13 +227,11 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * Execute one step of the algorithm.
 	 */
 	public void step(){
-		int i = 0;
 		for(Ant en : listAnt){
 			Path p = en.makePath();
 			if(listPath[indexCurrentPaire]== null || listPath[indexCurrentPaire].getPathWeight(weightAttribute)>p.getPathWeight(weightAttribute)){
 				listPath[indexCurrentPaire] = p;
 			}
-			//System.out.println("fourmis n°"+(i++));
 		}
 		//It is not done before, in the for, in order to avoid the creation of many useless copy of path which obstruct the memory space.
 		listPath[indexCurrentPaire] = listPath[indexCurrentPaire].getACopy();
@@ -238,13 +245,8 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 			indexCurrentPaire = 0;
 		
 		if((step+1)%numberOfPairToUsed == 0){
-			//In order to see if it is more fast.
-			t2 = System.currentTimeMillis();
-			d2 = t2 - t1;
-			System.out.println("Différence de temps = "+(d2-d1));
-			d1 = d2;
-			t1 = t2;
-			compareResultat();/**/
+			//In order to see if the algorithm compute "good" solution.
+			//compareResultat();
 			evaporatePheromone();
 		}
 	}
@@ -253,7 +255,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * Return the current pair of node computed
 	 * @return
 	 */
-	public String[] getCurrentPaire(){
+	public Node[] getCurrentPaire(){
 		return listPaire[indexCurrentPaire];
 	}
 	
@@ -269,7 +271,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * Return a new pair of node.
 	 * @return a pair of node
 	 */
-	public String[] selectPairNode(){
+	public Node[] selectPairNode(){
 		Node n1, n2;
 		do{
 			n1 = getGraph().getNode(getRandom().nextInt(getGraph().getNodeCount()));
@@ -287,7 +289,7 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 				}
 			}
 		}while(n1 == null);
-		return new String[]{n1.getId(), n2.getId()};
+		return new Node[]{n1, n2};
 	}
 	
 	/**
