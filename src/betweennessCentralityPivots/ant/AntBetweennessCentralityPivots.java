@@ -145,9 +145,8 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		
 		listPath = new Path[getNumberOfPairToUsed()];
 		
-		System.out.println("Compute with Brandes' algorithm");
 		BetweennessCentrality bcb = new BetweennessCentrality();
-		bcb.setWeightAttributeName("length");
+		bcb.setWeightAttributeName(getWeightAttribute());
 		bcb.setWeighted();
 		bcb.setCentralityAttributeName("InitialBetweennessCentrality");
 		bcb.setPutPheromones(true);
@@ -169,7 +168,6 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	 * The algorithm : compute each paths and define the centrality.
 	 */
 	public void compute() {
-		System.out.println("Compute with ant co");
 		while(!end){
 			System.out.println(step);
 			step();
@@ -203,26 +201,6 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 		}
 	}
 	
-	public void compareResultat(){
-		for(int j=0; j<listPath.length; j++){
-			Path p = listPath[j];
-			Dijkstra dijkstra = new Dijkstra(Dijkstra.Element.EDGE, null, "length");
-			dijkstra.init(graph);
-			dijkstra.setSource(p.getRoot());
-			dijkstra.compute();
-			System.out.println("différence = "+(p.getPathWeight("length")-dijkstra.getPathLength(p.peekNode())));
-			System.out.println("Longueur Dijsktra = "+dijkstra.getPathLength(p.peekNode()));
-			System.out.println("Longueur fourmis = "+p.getPathWeight("length"));
-			int nbNodeCommun = 0;
-			for(Node n : p.getNodeSet()){
-				if(dijkstra.getPath(p.peekNode()).contains(n))
-					nbNodeCommun++;
-			}
-			System.out.println("Nb node en commun = "+nbNodeCommun);
-			System.out.println("Nb node dijsktra = "+dijkstra.getPath(p.peekNode()).getNodeCount());
-		}
-	}
-	
 	/**
 	 * Execute one step of the algorithm.
 	 */
@@ -245,8 +223,6 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 			indexCurrentPaire = 0;
 		
 		if((step+1)%numberOfPairToUsed == 0){
-			//In order to see if the algorithm compute "good" solution.
-			//compareResultat();
 			evaporatePheromone();
 		}
 	}
@@ -317,51 +293,23 @@ public class AntBetweennessCentralityPivots extends SinkAdapter implements Algor
 	}
 	
 	private void evaporatePheromone(){
-		//Some attributes in order to analyse evolution of pheromone quantity => not in final version
-		int cpt = 0;
-		double sum = 0;
-		double max = Double.NEGATIVE_INFINITY;
-		double min = Double.POSITIVE_INFINITY;
-		double nbMax = 0;
-		double nbMin = 0;
 		for(Edge e : graph.getEdgeSet()){
 			if(e.hasAttribute("pheromones")){
 				double[] pheromones = e.getAttribute("pheromones");
 				for(int i = 0; i<pheromones.length; i++){
 					double d = pheromones[i];
 					d = d*Ant.rho;
-					
-					if(d<Ant.minPheromone){
+					if(d<Ant.minPheromone)
 						d = Ant.minPheromone;
-						nbMin++;
-					}
-					if(d > Ant.maxPheromones){
+					if(d > Ant.maxPheromones)
 						d = Ant.maxPheromones;
-						nbMax++;
-					}
 					pheromones[i] = d;
-					//piece of code in order to analyse the evolution of pheromone => it will be removed in final version
-					sum += d;
-					max = Math.max(d, max);
-					min = Math.min(d, min);
-					cpt++;
-					
 				}
 				e.setAttribute("pheromones", pheromones);
 			}
 		}
 		Ant.maxPathLength = Double.NEGATIVE_INFINITY;
 		Ant.minPathLength = Double.POSITIVE_INFINITY;
-		
-		//piece of code in order to analyse the evolution of pheromone => it will be removed in final version
-		System.out.println("moyenne pheromone = "+sum/cpt);
-		System.out.println("max pheromone = "+max);
-		System.out.println("min pheromone = "+min);
-		System.out.println("nbMax = "+nbMax);
-		System.out.println("nbMin = "+nbMin);
-		System.out.println("nbMinMax = "+(nbMax+nbMin));
-		System.out.println("nb = "+cpt);
-		System.out.println("nb arrete dans PCCC = "+listPath[indexCurrentPaire].getEdgeCount());/**/
 	}
 	
 	/**

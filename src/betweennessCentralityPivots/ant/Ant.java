@@ -55,17 +55,9 @@ public class Ant {
 		//initiate tabu list
 		clearTabuList();
 		int iTabuList = 0;
-		//System.out.println("\tAn ant compute...");
+
 		while(p.peekNode()!=dest){
-			/*try {
-				Thread.sleep(100);
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			current.addAttribute("ui.style", "fill-color: blue; size: 1px;");*/
 			current = p.peekNode();
-			//current.addAttribute("ui.style", "fill-color: red; size: 4px;");
 			
 			if(current.getLeavingEdgeSet().size()<=0){
 				//There is no escape ! The ant must go back.
@@ -77,13 +69,11 @@ public class Ant {
 					if(tabuListContains(e)){
 						proba = tabuProba;
 					}
-					else{ //if(e.getOpposite(current)!=dest){
+					else{
 						h = 2. / heuristic.h(current, e.getOpposite(current), dest);
 						pheromone = 1. + getPheromone(e, abcp.getIndexCurrentPaire(), abcp.getNumberOfPairToUsed());
 						proba = Math.pow(h, alpha)*Math.pow(pheromone, beta);
 					}
-					//else
-						//proba = 0.99;
 					e.addAttribute("proba", proba);
 					sum += proba;
 				}
@@ -128,13 +118,11 @@ public class Ant {
 
 	public static double getPheromone(Edge e, int type, int numberType){
 		double[] pheromones;
-		if(!e.hasAttribute("pheromones")){
+		if(!e.hasAttribute("pheromones"))
 			pheromones = new double[numberType];
-		}
-		else{
+		else
 			pheromones = e.getAttribute("pheromones");
-		}
-
+		
 		if((pheromones[type] == 0.) )
 			pheromones[type] = minPheromone;
 
@@ -168,17 +156,6 @@ public class Ant {
 			tabuList[i] = null;
 	}
 
-	public boolean nextAreTabu(Node n){
-		int nbNeighbor = 0;
-		int nbNeighborTabu = 0;
-		for(Edge v : n.getLeavingEdgeSet()){
-			if(tabuListContains(v))
-				nbNeighborTabu++;
-			nbNeighbor++;
-		}
-		return nbNeighbor == nbNeighborTabu;
-	}
-
 	public void jumpBack(){
 		if(p.size() <= 1){
 			Node r = p.getRoot();
@@ -202,8 +179,8 @@ public class Ant {
 
 	public class RandomHeuristic extends Heuristic{
 		/**
-		 * Heuristics of euclidean distance
-		 * return the euclidean distance between the two nodes in parameters 
+		 * Not really a heuristic
+		 * return a random value between [1.; 2.[
 		 */
 		public double h(Node current, Node next, Node dest){
 			return Ant.this.abcp.getRandom().nextDouble()+1;
